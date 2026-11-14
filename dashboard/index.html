@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Real estate listing intelligence dashboard" />
+    <title>Atlas | Real Estate Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-mark"><i data-lucide="compass"></i></span><span>ATLAS</span></div>
+        <p class="eyebrow">Workspace</p>
+        <nav>
+          <a class="nav-item active" href="#overview"><i data-lucide="layout-dashboard"></i>Overview</a>
+          <a class="nav-item" href="#neighbourhoods"><i data-lucide="map"></i>Neighbourhoods</a>
+          <a class="nav-item" href="#listings"><i data-lucide="building-2"></i>Listings</a>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="status-card"><span class="status-dot"></span><div><strong>Data is live</strong><small>Synced from Airflow</small></div></div>
+          <a class="nav-item" href="http://localhost:8080" target="_blank" rel="noreferrer"><i data-lucide="workflow"></i>Open Airflow</a>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div><p class="kicker">Real estate intelligence <span>/</span> NYC</p><h1>Market pulse</h1></div>
+          <div class="topbar-actions"><span class="last-sync" id="last-sync">Connecting...</span><span class="pipeline-badge" id="pipeline-state">Pipeline: checking</span><button class="run-button" id="run-pipeline"><i data-lucide="play"></i>Run pipeline</button><button class="icon-button" id="refresh-button" title="Refresh data" aria-label="Refresh data"><i data-lucide="refresh-cw"></i></button><div class="avatar">AT</div></div>
+        </header>
+
+        <div id="error-banner" class="error-banner" role="alert" hidden></div>
+        <section id="overview" class="hero-grid">
+          <div class="hero-copy"><span class="live-label"><span class="pulse"></span>Live dataset</span><h2>See where the market<br /><em>is moving.</em></h2><p>Decision-ready signals from <span id="hero-listing-total">--</span> curated listings, refreshed through your Airflow pipeline.</p><a class="text-link" href="#listings">Explore listings <i data-lucide="arrow-up-right"></i></a></div>
+          <div class="hero-visual"><div class="map-grid"></div><div class="map-label label-manhattan">Manhattan <b id="borough-count-manhattan">--</b></div><div class="map-label label-brooklyn">Brooklyn <b id="borough-count-brooklyn">--</b></div><div class="map-label label-queens">Queens <b id="borough-count-queens">--</b></div><div class="map-point point-one"></div><div class="map-point point-two"></div><div class="map-point point-three"></div><span class="visual-caption">LISTING DENSITY / NYC</span></div>
+        </section>
+
+        <section class="metrics-grid" aria-label="Key metrics">
+          <article class="metric-card"><div class="metric-head"><span>Listings tracked</span><i data-lucide="database"></i></div><strong id="listing-count">--</strong><small><span class="positive">+ live</span> curated inventory</small></article>
+          <article class="metric-card accent"><div class="metric-head"><span>Average nightly price</span><i data-lucide="tag"></i></div><strong id="average-price">--</strong><small>Across all listing types</small></article>
+          <article class="metric-card"><div class="metric-head"><span>Average availability</span><i data-lucide="calendar-days"></i></div><strong id="average-availability">--</strong><small>Days open per year</small></article>
+          <article class="metric-card"><div class="metric-head"><span>Neighbourhoods</span><i data-lucide="layers-3"></i></div><strong id="neighbourhood-count">--</strong><small>Tracked in the dataset</small></article>
+        </section>
+        <section class="panel quality-panel" aria-label="Data quality">
+          <div class="panel-heading"><div><p class="kicker">Source integrity</p><h3>Data quality</h3></div><span id="quality-status" class="quality-status empty" aria-live="polite">Checking</span></div>
+          <div class="quality-grid">
+            <div class="quality-item"><span>Total records</span><strong id="quality-total">--</strong></div>
+            <div class="quality-item"><span>Missing values</span><strong id="quality-missing">--</strong></div>
+            <div class="quality-item"><span>Duplicate IDs</span><strong id="quality-duplicates">--</strong></div>
+            <div class="quality-item"><span>Invalid prices</span><strong id="quality-invalid-prices">--</strong></div>
+            <div class="quality-item"><span>Validation</span><strong id="quality-validation">Checking</strong></div>
+          </div>
+        </section>
+        <div class="operation-strip"><span class="status-dot"></span><strong id="freshness-state">Data freshness: checking</strong><span id="last-successful-run">Latest successful DAG run: checking</span><span>Operational controls are protected and routed through Airflow.</span></div>
+
+        <section class="panel recovery-panel">
+          <div class="panel-heading">
+            <div><p class="kicker">Operational health</p><h3>Recovery &amp; alerts</h3></div>
+            <span class="panel-meta" id="recovery-summary">Checking recent runs</span>
+          </div>
+          <div id="recovery-alert" class="alert-banner">Monitoring recent DAG runs...</div>
+          <div id="pipeline-history-list" class="history-list"><div class="skeleton"></div></div>
+        </section>
+
+        <section class="content-grid">
+          <article class="panel room-panel"><div class="panel-heading"><div><p class="kicker">Inventory mix</p><h3>Room types</h3></div><span class="panel-meta" id="room-total">-- types</span></div><div id="room-chart" class="bar-chart"><div class="skeleton"></div></div></article>
+          <article id="neighbourhoods" class="panel neighbourhood-panel"><div class="panel-heading"><div><p class="kicker">Market leaders</p><h3>Top neighbourhoods</h3></div><a class="small-link" href="#listings">View all <i data-lucide="arrow-up-right"></i></a></div><div id="neighbourhood-list" class="rank-list"><div class="skeleton"></div></div></article>
+        </section>
+
+        <section id="listings" class="panel listings-panel"><div class="panel-heading listings-heading"><div><p class="kicker">Curated inventory</p><h3>Browse listings</h3></div><div class="filters"><label><span class="sr-only">Borough</span><select id="borough-filter"><option value="">All boroughs</option><option>Manhattan</option><option>Brooklyn</option><option>Queens</option><option>Bronx</option><option>Staten Island</option></select></label><label><span class="sr-only">Room type</span><select id="room-filter"><option value="">All room types</option><option>Entire home/apt</option><option>Private room</option><option>Shared room</option></select></label><button class="filter-button" id="apply-filters"><i data-lucide="sliders-horizontal"></i>Apply</button></div></div><div class="table-wrap"><table><thead><tr><th>Listing</th><th>Area</th><th>Type</th><th>Price</th><th>Reviews</th><th>Availability</th></tr></thead><tbody id="listing-table"><tr><td colspan="6"><div class="skeleton"></div></td></tr></tbody></table></div><div class="table-footer"><span id="listing-range">Showing latest records</span><div><button class="pager" id="prev-page" aria-label="Previous page"><i data-lucide="chevron-left"></i></button><button class="pager" id="next-page" aria-label="Next page"><i data-lucide="chevron-right"></i></button></div></div></section>
+        <footer><span>ATLAS / DATA OPERATIONS</span><span>Powered by Airflow + PostgreSQL</span></footer>
+      </main>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>

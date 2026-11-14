@@ -1,0 +1,50 @@
+http:
+  routers:
+    api-router:
+      rule: "Host(`api.example.com`)"
+      entryPoints:
+        - websecure
+      service: api-service
+      tls:
+        certResolver: letsencrypt
+
+    dashboard-router:
+      rule: "Host(`dashboard.example.com`)"
+      entryPoints:
+        - websecure
+      service: dashboard-service
+      tls:
+        certResolver: letsencrypt
+
+  services:
+    api-service:
+      loadBalancer:
+        servers:
+          - url: "http://analytics-api:8000"
+
+    dashboard-service:
+      loadBalancer:
+        servers:
+          - url: "http://dashboard:5173"
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+
+  websecure:
+    address: ":443"
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: ops@example.com
+      storage: /letsencrypt/acme.json
+      tlsChallenge: {}
+
+log:
+  level: INFO

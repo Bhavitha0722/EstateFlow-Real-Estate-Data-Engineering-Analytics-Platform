@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test -d test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      RUN_POSTGRES_INTEGRATION_TESTS: "1"
+      TEST_ANALYTICS_DATABASE_DSN: postgresql://test:test@localhost:5432/test
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install development dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Install API dependencies
+        run: python -m pip install -r requirements-api.txt
+
+      - name: Install Airflow PostgreSQL provider for integration tests
+        run: >-
+          python -m pip install "apache-airflow==2.10.5"
+          "apache-airflow-providers-postgres==5.17.0"
+          --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.10.5/constraints-3.11.txt"
+
+      - name: Check formatting
+        run: ruff format --check api dags tests
+
+      - name: Lint Python
+        run: ruff check api dags tests
+
+      - name: Run unit tests
+        run: pytest --cov=api --cov=clean --cov=filter --cov=analytics_db --cov=data_quality --cov=dags.notifications --cov-report=term-missing --cov-report=xml:coverage.xml
+
+      - name: Check transform type hints
+        run: mypy --follow-imports=silent dags/clean.py dags/filter.py
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+          if-no-files-found: ignore
+
+      - name: Compile Python files
+        run: python -m compileall -q dags tests
+
+      - name: Validate Compose configuration
+        run: docker compose --env-file .env.example -f docker-compose-LocalExecutor.yml config --quiet
+
+      - name: Build analytics API Docker image
+        run: docker build --file Dockerfile.api --tag analytics-api:ci .

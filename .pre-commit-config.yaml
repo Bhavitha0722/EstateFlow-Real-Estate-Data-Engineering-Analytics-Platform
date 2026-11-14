@@ -1,0 +1,23 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: Ruff lint
+        entry: ruff check --fix
+        language: system
+        types: [python]
+      - id: ruff-format
+        name: Ruff format
+        entry: ruff format
+        language: system
+        types: [python]
+      - id: mypy-transforms
+        name: Mypy transform types
+        entry: mypy --follow-imports=silent dags/clean.py dags/filter.py
+        language: system
+        pass_filenames: false
+      - id: pytest
+        name: Pytest
+        entry: pytest -q
+        language: system
+        pass_filenames: false
